@@ -1,4 +1,5 @@
 import { chromium } from "playwright";
+import { parseTangoGrid } from "./vision/readBoard";
 
 (async () => {
     const browser = await chromium.launch({ headless: false });
@@ -35,6 +36,11 @@ import { chromium } from "playwright";
     // Take a screenshot of the iframe
     await page.screenshot({ path: 'assets/board.png' });
     console.log("Game started and screenshot taken!");
+
+    parseTangoGrid().then(result => {
+        console.log('Cells:', result.grid);
+        console.log('Symbols:', result.symbols);
+    });
 
     // await browser.close();
 })();
