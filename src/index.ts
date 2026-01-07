@@ -1,7 +1,13 @@
 import { chromium } from "playwright";
-import { parseTangoGrid } from "./vision/readBoard";
+import { parseTangoGrid } from "./vision/parseTangoGrid";
+import path from "path";
 
 (async () => {
+    await parseTangoGrid("C:\\Users\\adam_\\dev\\tanguera\\assets\\previous\\board3.png", true).then(result => {
+        console.log('Cells:', result.grid);
+        console.log('Symbols:', result.symbols);
+    });
+    
     const browser = await chromium.launch({ headless: false });
     const page = await browser.newPage();
     await page.addInitScript(() => {
@@ -37,7 +43,8 @@ import { parseTangoGrid } from "./vision/readBoard";
     await page.screenshot({ path: 'assets/board.png' });
     console.log("Game started and screenshot taken!");
 
-    parseTangoGrid().then(result => {
+    const fullPath = path.resolve(__dirname, "../assets/board.png");
+    parseTangoGrid(fullPath, true).then(result => {
         console.log('Cells:', result.grid);
         console.log('Symbols:', result.symbols);
     });
