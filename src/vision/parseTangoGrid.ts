@@ -81,6 +81,7 @@ function detectColour(image: any, px: number, py: number, offset: number = 0): C
 export async function parseTangoGrid(pathToImage: string, debug = false) {
     const image = await Jimp.read(pathToImage);
 
+    // read the cells of the grid
     const grid: CellGrid = [];
     for (let r = 0; r < GRID_SIZE_IN_CELLS; r++) {
         const row: CellContent[] = [];
@@ -88,10 +89,8 @@ export async function parseTangoGrid(pathToImage: string, debug = false) {
             const x = START_COORDS[0] + c * (WIDTH_OF_CELL_PX + GRID_SPACING_PX);
             const y = START_COORDS[1] + r * (WIDTH_OF_CELL_PX + GRID_SPACING_PX);
 
-            if (debug) {
-                // Draw cell outline for debugging
-                drawCellOutline(image, x, y, WIDTH_OF_CELL_PX);
-            }
+            // Draw cell outline for debugging
+            // drawCellOutline(image, x, y, WIDTH_OF_CELL_PX);
 
             const content = detectColour(image, x, y, 5);
             row.push(content);
@@ -100,12 +99,27 @@ export async function parseTangoGrid(pathToImage: string, debug = false) {
         grid.push(row);
     }
 
+
+
+    // read the symbols between cells
+    const symbols: SymbolPositions = [];
+    const HORIZONATAL_START_COORDS = [491, 124];
+    const SAMPLE_SIZE = 18;
+    // horizontal symbols
+    for (let r = 0; r < GRID_SIZE_IN_CELLS; r++) {
+        for (let c = 0; c < GRID_SIZE_IN_CELLS - 1; c++) {
+            // read pixel between cells
+            const x = HORIZONATAL_START_COORDS[0] + c * (WIDTH_OF_CELL_PX + GRID_SPACING_PX);
+            const y = HORIZONATAL_START_COORDS[1] + r * (WIDTH_OF_CELL_PX + GRID_SPACING_PX);
+
+            drawCellOutline(image, x, y, SAMPLE_SIZE);
+        }
+    }
+
+    
     if(debug) {
         const fullDebugPath = path.resolve(__dirname, "../../assets/board_debug.png") as '`${string}.${string}`';
         await image.write(fullDebugPath);
     }
-
-    const symbols: SymbolPositions = [];
-
     return { grid, symbols };
 }
