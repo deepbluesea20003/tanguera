@@ -1,5 +1,7 @@
 import { chromium } from "playwright";
 
+const TIMEOUT = 600_000; // 10 minutes
+
 (async () => {
   const browser = await chromium.launch({ headless: false });
   const context = await browser.newContext();
@@ -10,7 +12,7 @@ import { chromium } from "playwright";
   console.log("👉 Log in manually, then press Enter here");
 
   // Give you time to log in manually
-  await page.waitForTimeout(60_000);
+  await page.waitForTimeout(TIMEOUT);
 
   // Save auth state
   await context.storageState({ path: "auth.json" });

@@ -41,7 +41,7 @@ import path from "path";
     const fullPath = path.resolve(__dirname, "../assets/previous/board1.png");
     parseTangoGrid(fullPath, true).then(result => {
         console.log('Cells:', result.grid);
-        console.log('Symbols:', result.symbols);
+        console.log('Symbols:', JSON.stringify(result.symbols));
     });
 
     // await browser.close();
