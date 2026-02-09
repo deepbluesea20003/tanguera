@@ -14,7 +14,7 @@ export enum CellContent {
     MOON = 'M'
 }
 
-enum SymbolType {
+export enum SymbolType {
     X = 'x',
     EQUALS = '='
 }
@@ -77,6 +77,50 @@ function detectColour(image: any, px: number, py: number, offset: number = 0): C
     return CellContent.EMPTY;
 }
 
+function detectSymbolInBox(
+    image: any,
+    x: number,
+    y: number,
+    size: number
+): SymbolType | null {
+    let darkPixels: { x: number; y: number }[] = [];
+
+    // 1. Collect dark pixels inside the box
+    for (let dy = 0; dy < size; dy++) {
+        for (let dx = 0; dx < size; dx++) {
+            const px = image.getPixelColor(x + dx, y + dy);
+            const { r, g, b } = intToRGBA(px);
+
+            // symbol color is dark grey / brown
+            if (r < 180 && g < 160 && b < 140) {
+                darkPixels.push({ x: dx, y: dy });
+            }
+        }
+    }
+
+    // Too few pixels = no symbol
+    if (darkPixels.length < 6) return null;
+
+    const xs = darkPixels.map(p => p.x);
+    const ys = darkPixels.map(p => p.y);
+
+    const minX = Math.min(...xs);
+    const maxX = Math.max(...xs);
+    const minY = Math.min(...ys);
+    const maxY = Math.max(...ys);
+
+    const width = maxX - minX;
+    const height = maxY - minY;
+
+    // '=' → wide, short, two horizontal bars
+    if (width > height * 1.3) {
+        return SymbolType.EQUALS;
+    }
+
+    // 'x' → roughly square with diagonal spread
+    return SymbolType.X;
+}
+
 
 export async function parseTangoGrid(pathToImage: string, debug = false) {
     const image = await Jimp.read(pathToImage);
@@ -103,16 +147,43 @@ export async function parseTangoGrid(pathToImage: string, debug = false) {
 
     // read the symbols between cells
     const symbols: SymbolPositions = [];
-    const HORIZONATAL_START_COORDS = [491, 124];
+
+    const HORIZONTAL_START_COORDS = [491, 124];
     const SAMPLE_SIZE = 18;
     // horizontal symbols
     for (let r = 0; r < GRID_SIZE_IN_CELLS; r++) {
         for (let c = 0; c < GRID_SIZE_IN_CELLS - 1; c++) {
             // read pixel between cells
-            const x = HORIZONATAL_START_COORDS[0] + c * (WIDTH_OF_CELL_PX + GRID_SPACING_PX);
-            const y = HORIZONATAL_START_COORDS[1] + r * (WIDTH_OF_CELL_PX + GRID_SPACING_PX);
+            const x = HORIZONTAL_START_COORDS[0] + c * (WIDTH_OF_CELL_PX + GRID_SPACING_PX);
+            const y = HORIZONTAL_START_COORDS[1] + r * (WIDTH_OF_CELL_PX + GRID_SPACING_PX);
 
             drawCellOutline(image, x, y, SAMPLE_SIZE);
+            const symbol = detectSymbolInBox(image, x, y, SAMPLE_SIZE);
+            if (symbol) {
+                symbols.push({
+                    type: symbol,
+                    between: [[r, c], [r, c + 1]]
+                });
+            }
+        }
+    }
+
+    const VERTICAL_START_COORDS = [457, 156];
+    // vertical symbols
+    for (let r = 0; r < GRID_SIZE_IN_CELLS - 1; r++) {
+        for (let c = 0; c < GRID_SIZE_IN_CELLS; c++) {
+            // read pixel between cells
+            const x = VERTICAL_START_COORDS[0] + c * (WIDTH_OF_CELL_PX + GRID_SPACING_PX);
+            const y = VERTICAL_START_COORDS[1] + r * (WIDTH_OF_CELL_PX + GRID_SPACING_PX);
+
+            drawCellOutline(image, x, y, SAMPLE_SIZE);
+            const symbol = detectSymbolInBox(image, x, y, SAMPLE_SIZE);
+            if (symbol) {
+                symbols.push({
+                    type: symbol,
+                    between: [[r, c], [r + 1, c]]
+                });
+            }
         }
     }
 

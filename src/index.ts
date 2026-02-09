@@ -38,7 +38,7 @@ import path from "path";
     // await page.screenshot({ path: 'assets/board.png' });
     // console.log("Game started and screenshot taken!");
 
-    const fullPath = path.resolve(__dirname, "../assets/previous/board1.png");
+    const fullPath = path.resolve(__dirname, "../assets/previous/board2.png");
     parseTangoGrid(fullPath, true).then(result => {
         console.log('Cells:', result.grid);
         console.log('Symbols:', JSON.stringify(result.symbols));
