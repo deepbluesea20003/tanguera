@@ -39,10 +39,9 @@ import path from "path";
     // console.log("Game started and screenshot taken!");
 
     const fullPath = path.resolve(__dirname, "../assets/previous/board2.png");
-    parseTangoGrid(fullPath, true).then(result => {
-        console.log('Cells:', result.grid);
-        console.log('Symbols:', JSON.stringify(result.symbols));
-    });
+    const { grid, symbols } = await parseTangoGrid(fullPath, true);
+    console.log('Cells:', grid);
+    console.log('Symbols:', JSON.stringify(symbols));
 
     // await browser.close();
 })();
