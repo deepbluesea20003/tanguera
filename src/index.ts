@@ -1,21 +1,48 @@
 import { chromium } from "playwright";
+import { parseTangoGrid } from "./vision/parseTangoGrid";
+import path from "path";
 
-(async () => {
-  const browser = await chromium.launch({ headless: false });
-  const page = await browser.newPage();
+(async () => {    
+    // const browser = await chromium.launch({ headless: false });
+    // const page = await browser.newPage();
+    // await page.addInitScript(() => {
+    //     Object.defineProperty(navigator, 'webdriver', { get: () => false });
+    // });
 
-  await page.goto("https://www.nytimes.com/puzzles/tango");
+    // await page.goto("https://www.linkedin.com/games/tango/");
 
-  // Wait for puzzle to load
-  await page.waitForTimeout(3000);
+    // // Handle cookie consent
+    // const rejectBtn = page.locator('button', { hasText: 'Reject' });
+    // await rejectBtn.waitFor({ state: 'visible' });
+    // await rejectBtn.click();
 
-  // Take a screenshot
-  await page.screenshot({ path: "board.png" });
+    // // Wait for the iframe to appear
+    // const frameElement = await page.waitForSelector('iframe.game-launch-page__iframe');
+    // const frame = await frameElement.contentFrame(); // switch to the iframe
 
-  // Example click (replace coords later)
-  await page.mouse.click(500, 500);
+    // if (!frame) {
+    //     console.error("Could not access iframe!");
+    //     return;
+    // }
 
-  console.log("Ready.");
+    // const startBtn = frame.locator('#launch-footer-start-button');
+    // await startBtn.waitFor({ state: 'visible' });
+    // await startBtn.scrollIntoViewIfNeeded();
+    // await startBtn.hover();
+    // await startBtn.click({ force: true });
 
-  // await browser.close();
+    // // Wait for game content to load
+    // await frame.getByText('How to play').waitFor({ state: 'visible' });
+
+    // // Take a screenshot of the iframe
+    // await page.screenshot({ path: 'assets/board.png' });
+    // console.log("Game started and screenshot taken!");
+
+    const fullPath = path.resolve(__dirname, "../assets/previous/board2.png");
+    parseTangoGrid(fullPath, true).then(result => {
+        console.log('Cells:', result.grid);
+        console.log('Symbols:', JSON.stringify(result.symbols));
+    });
+
+    // await browser.close();
 })();
