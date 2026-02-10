@@ -88,4 +88,44 @@ describe('gridSolver', () => {
         expect(reversedSolvedGrid).toEqual(reversedExpectedGrid);
     });
 
+    it('should handle the bookend rule for single ends', () => {
+        const grid: CellContent[][] = [
+            [ CellContent.SUN, CellContent.EMPTY, CellContent.EMPTY, CellContent.SUN ]
+        ];
+        const symbols: SymbolPosition[] = [];
+
+        const expectedGrid: CellContent[][] = [
+            [ CellContent.SUN, CellContent.MOON, CellContent.MOON, CellContent.SUN ]
+        ];
+
+        const gridSolver = new GridSolver(grid, symbols);
+        const solvedGrid = gridSolver.solve();
+        expect(solvedGrid).toEqual(expectedGrid);
+    });
+
+    it('should handle the bookend rule for double ends in columns', () => {
+        const grid: CellContent[][] = [
+            [ CellContent.SUN ],
+            [ CellContent.SUN ],
+            [ CellContent.EMPTY ],
+            [ CellContent.MOON ],
+            [ CellContent.EMPTY ],
+            [ CellContent.EMPTY ]
+        ];
+        const symbols: SymbolPosition[] = [];
+        const expectedGrid: CellContent[][] = [
+            [ CellContent.SUN ],
+            [ CellContent.SUN ],
+            [ CellContent.MOON ],
+            [ CellContent.MOON ],
+            [ CellContent.SUN ],
+            [ CellContent.MOON ]
+        ];
+
+        const gridSolver = new GridSolver(grid, symbols);
+        const solvedGrid = gridSolver.solve();
+        expect(solvedGrid).toEqual(expectedGrid);
+
+    });
+
 });

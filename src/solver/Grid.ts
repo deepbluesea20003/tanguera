@@ -62,11 +62,25 @@ export class GridSolver {
             if (colTwoInRowMoves) {
                 moves.push(...colTwoInRowMoves);
             }
+
+            const rowBookendMoves = this.getMovesFromLineIfPotentialBookend(i, true);
+            if (rowBookendMoves) {
+                moves.push(...rowBookendMoves);
+            }
+
+            const colBookendMoves = this.getMovesFromLineIfPotentialBookend(i, false);
+            if (colBookendMoves) {
+                moves.push(...colBookendMoves);
+            }
         }
         return moves;
     }
 
-    // next get when 2 symbols are in a row, we can fill 3rd as the other one
+    private opposite(cell: CellContent): CellContent {
+        return cell === CellContent.SUN ? CellContent.MOON : CellContent.SUN;
+    }
+
+    // When 2 symbols are in a row, we can fill 3rd as the other one
     private getMovesFromLineIfTwoInRow(
         lineIndex: number,
         isRow: boolean = true
@@ -77,9 +91,6 @@ export class GridSolver {
             ? this.grid[lineIndex]
             : this.grid.map(row => row[lineIndex]);
 
-        const opposite = (cell: CellContent) =>
-            cell === CellContent.SUN ? CellContent.MOON : CellContent.SUN;
-
         for (let i = 0; i < line.length - 2; i++) {
             const a = line[i];
             const b = line[i + 1];
@@ -89,8 +100,8 @@ export class GridSolver {
             if (a === b && a !== CellContent.EMPTY && c === CellContent.EMPTY) {
                 moves.push(
                     isRow
-                        ? { x: lineIndex, y: i + 2, symbol: opposite(a) }
-                        : { x: i + 2, y: lineIndex, symbol: opposite(a) }
+                        ? { x: lineIndex, y: i + 2, symbol: this.opposite(a) }
+                        : { x: i + 2, y: lineIndex, symbol: this.opposite(a) }
                 );
             }
 
@@ -98,8 +109,8 @@ export class GridSolver {
             if (b === c && b !== CellContent.EMPTY && a === CellContent.EMPTY) {
                 moves.push(
                     isRow
-                        ? { x: lineIndex, y: i, symbol: opposite(b) }
-                        : { x: i, y: lineIndex, symbol: opposite(b) }
+                        ? { x: lineIndex, y: i, symbol: this.opposite(b) }
+                        : { x: i, y: lineIndex, symbol: this.opposite(b) }
                 );
             }
         }
@@ -133,7 +144,50 @@ export class GridSolver {
         return null;
     }
 
-    // bookend rule.
+    // bookend rule. This only works for lines of length 6, so for now ignore other cases
+private getMovesFromLineIfPotentialBookend(lineIndex: number, isRow: boolean = true): Move[] | null {
+    const line = isRow
+        ? this.grid[lineIndex]
+        : this.grid.map(row => row[lineIndex]);
+
+    // Ends match → fill interior
+    if (line[0] === line[line.length - 1] && line[0] !== CellContent.EMPTY) {
+        const symbol = this.opposite(line[0]);
+        const moves: Move[] = [];
+
+        for (let i = 1; i < line.length - 1; i++) {
+            if (line[i] === CellContent.EMPTY) {
+                moves.push(
+                    isRow
+                        ? { x: lineIndex, y: i, symbol }
+                        : { x: i, y: lineIndex, symbol }
+                );
+            }
+        }
+
+        return moves.length ? moves : null;
+    }
+
+    // Double at start → fill third
+    if (line[0] !== CellContent.EMPTY && line[0] === line[1]) {
+        return isRow
+            ? [ { x: lineIndex, y: 2, symbol: this.opposite(line[0]) } ]
+            : [ { x: 2, y: lineIndex, symbol: this.opposite(line[0]) } ];
+    }
+
+    // Double at end → fill before them
+    if (
+        line[line.length - 1] !== CellContent.EMPTY &&
+        line[line.length - 1] === line[line.length - 2]
+    ) {
+        return isRow
+            ? [ { x: lineIndex, y: line.length - 3, symbol: this.opposite(line[line.length - 1]) } ]
+            : [ { x: line.length - 3, y: lineIndex, symbol: this.opposite(line[line.length - 1]) } ];
+    }
+
+    return null;
+}
+
 
     private getMoveFromLink(link: SymbolPosition): Move | null {
         const [cell1, cell2] = link.between;
