@@ -29,7 +29,7 @@ export class GridSolver {
     private analyseBoard(): Move[] {
         const unusedLinks = this.detectUnusedLinks();
         const moves: Move[] = [];
-        
+
         unusedLinks.forEach(link => {
             const move = this.getMoveFromLink(link);
             if (move) {
@@ -38,11 +38,9 @@ export class GridSolver {
         });
 
         moves.push(...this.getMovesFromGrid());
-        
+
         return moves;
     }
-
-    // next get when 2 symbols are in a row, we can fill 3rd as the other one
 
     private getMovesFromGrid(): Move[] {
         const moves: Move[] = [];
@@ -55,28 +53,79 @@ export class GridSolver {
             if (colMoves) {
                 moves.push(...colMoves);
             }
+
+            const rowTwoInRowMoves = this.getMovesFromLineIfTwoInRow(i, true);
+            if (rowTwoInRowMoves) {
+                moves.push(...rowTwoInRowMoves);
+            }
+            const colTwoInRowMoves = this.getMovesFromLineIfTwoInRow(i, false);
+            if (colTwoInRowMoves) {
+                moves.push(...colTwoInRowMoves);
+            }
         }
         return moves;
     }
 
-    // when a row/column already has 3 symbols, we can fill the others with the other one
-    private getMovesFromLineIfFull(lineIndex: number, isRow: boolean = true): Move[] | null {
-        const line = isRow 
+    // next get when 2 symbols are in a row, we can fill 3rd as the other one
+    private getMovesFromLineIfTwoInRow(
+        lineIndex: number,
+        isRow: boolean = true
+    ): Move[] | null {
+        const moves: Move[] = [];
+
+        const line = isRow
             ? this.grid[lineIndex]
             : this.grid.map(row => row[lineIndex]);
-        
+
+        const opposite = (cell: CellContent) =>
+            cell === CellContent.SUN ? CellContent.MOON : CellContent.SUN;
+
+        for (let i = 0; i < line.length - 2; i++) {
+            const a = line[i];
+            const b = line[i + 1];
+            const c = line[i + 2];
+
+            // Case: AA_
+            if (a === b && a !== CellContent.EMPTY && c === CellContent.EMPTY) {
+                moves.push(
+                    isRow
+                        ? { x: lineIndex, y: i + 2, symbol: opposite(a) }
+                        : { x: i + 2, y: lineIndex, symbol: opposite(a) }
+                );
+            }
+
+            // Case: _AA
+            if (b === c && b !== CellContent.EMPTY && a === CellContent.EMPTY) {
+                moves.push(
+                    isRow
+                        ? { x: lineIndex, y: i, symbol: opposite(b) }
+                        : { x: i, y: lineIndex, symbol: opposite(b) }
+                );
+            }
+        }
+
+        return moves.length ? moves : null;
+    }
+
+
+    // when a row/column already has 3 symbols, we can fill the others with the other one
+    private getMovesFromLineIfFull(lineIndex: number, isRow: boolean = true): Move[] | null {
+        const line = isRow
+            ? this.grid[lineIndex]
+            : this.grid.map(row => row[lineIndex]);
+
         const suns = line.flatMap((cell, idx) => cell === CellContent.SUN ? [idx] : []);
         const moons = line.flatMap((cell, idx) => cell === CellContent.MOON ? [idx] : []);
         const empties = line.flatMap((cell, idx) => cell === CellContent.EMPTY ? [idx] : []);
-        
+
         if (suns.length === (line.length / 2)) {
-            return empties.map(empty => isRow 
+            return empties.map(empty => isRow
                 ? ({ x: lineIndex, y: empty, symbol: CellContent.MOON })
                 : ({ x: empty, y: lineIndex, symbol: CellContent.MOON })
             );
         }
         if (moons.length === (line.length / 2)) {
-            return empties.map(empty => isRow 
+            return empties.map(empty => isRow
                 ? ({ x: lineIndex, y: empty, symbol: CellContent.SUN })
                 : ({ x: empty, y: lineIndex, symbol: CellContent.SUN })
             );
@@ -90,7 +139,7 @@ export class GridSolver {
         const [cell1, cell2] = link.between;
         const content1 = this.grid[cell1[0]][cell1[1]];
         const content2 = this.grid[cell2[0]][cell2[1]];
-        
+
         // if one of the cells is filled and the other isn't, we know what to fill the other one with
         if (content1 !== CellContent.EMPTY && content2 === CellContent.EMPTY) {
             return {
@@ -109,9 +158,9 @@ export class GridSolver {
                     : content2
             };
         }
-        
+
         return null;
-    } 
+    }
 
     private makeMove(x: number, y: number, symbol: CellContent) {
         if (!this.grid[x] || this.grid[x][y] === undefined) {

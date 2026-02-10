@@ -62,5 +62,30 @@ describe('gridSolver', () => {
         expect(solvedGrid).toEqual(expectedGrid);
     });
 
+    it('should fill a cell when there are already 2 in a row and the third is empty', () => {
+        const symbols: SymbolPosition[] = [];
+        const grid: CellContent[][] = [
+            [ CellContent.SUN, CellContent.SUN, CellContent.EMPTY ]
+        ];
+
+        const expectedGrid: CellContent[][] = [
+            [ CellContent.SUN, CellContent.SUN, CellContent.MOON ]
+        ];
+
+        const gridSolver = new GridSolver(grid, symbols);
+        const solvedGrid = gridSolver.solve();
+        expect(solvedGrid).toEqual(expectedGrid);
+
+        // Test _AA case (2 symbols at the end)
+        const reversedGrid: CellContent[][] = [
+            [ CellContent.EMPTY, CellContent.SUN, CellContent.SUN ]
+        ];
+        const reversedExpectedGrid: CellContent[][] = [
+            [ CellContent.MOON, CellContent.SUN, CellContent.SUN ]
+        ];
+        const reversedGridSolver = new GridSolver(reversedGrid, symbols);
+        const reversedSolvedGrid = reversedGridSolver.solve();
+        expect(reversedSolvedGrid).toEqual(reversedExpectedGrid);
+    });
 
 });
