@@ -36,9 +36,55 @@ export class GridSolver {
                 moves.push(move);
             }
         });
+
+        moves.push(...this.getMovesFromGrid());
         
         return moves;
     }
+
+    // next get when 2 symbols are in a row, we can fill 3rd as the other one
+
+    private getMovesFromGrid(): Move[] {
+        const moves: Move[] = [];
+        for (let i = 0; i < this.grid.length; i++) {
+            const rowMoves = this.getMovesFromLineIfFull(i, true);
+            if (rowMoves) {
+                moves.push(...rowMoves);
+            }
+            const colMoves = this.getMovesFromLineIfFull(i, false);
+            if (colMoves) {
+                moves.push(...colMoves);
+            }
+        }
+        return moves;
+    }
+
+    // when a row/column already has 3 symbols, we can fill the others with the other one
+    private getMovesFromLineIfFull(lineIndex: number, isRow: boolean = true): Move[] | null {
+        const line = isRow 
+            ? this.grid[lineIndex]
+            : this.grid.map(row => row[lineIndex]);
+        
+        const suns = line.flatMap((cell, idx) => cell === CellContent.SUN ? [idx] : []);
+        const moons = line.flatMap((cell, idx) => cell === CellContent.MOON ? [idx] : []);
+        const empties = line.flatMap((cell, idx) => cell === CellContent.EMPTY ? [idx] : []);
+        
+        if (suns.length === (line.length / 2)) {
+            return empties.map(empty => isRow 
+                ? ({ x: lineIndex, y: empty, symbol: CellContent.MOON })
+                : ({ x: empty, y: lineIndex, symbol: CellContent.MOON })
+            );
+        }
+        if (moons.length === (line.length / 2)) {
+            return empties.map(empty => isRow 
+                ? ({ x: lineIndex, y: empty, symbol: CellContent.SUN })
+                : ({ x: empty, y: lineIndex, symbol: CellContent.SUN })
+            );
+        }
+        return null;
+    }
+
+    // bookend rule.
 
     private getMoveFromLink(link: SymbolPosition): Move | null {
         const [cell1, cell2] = link.between;
