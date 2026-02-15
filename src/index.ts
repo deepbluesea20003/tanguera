@@ -1,6 +1,7 @@
 import { chromium } from "playwright";
 import { parseTangoGrid } from "./vision/parseTangoGrid";
 import path from "path";
+import { GridSolver } from "./solver/Grid";
 
 (async () => {    
     // const browser = await chromium.launch({ headless: false });
@@ -42,6 +43,10 @@ import path from "path";
     const { grid, symbols } = await parseTangoGrid(fullPath, true);
     console.log('Cells:', grid);
     console.log('Symbols:', JSON.stringify(symbols));
+
+    const solver = new GridSolver(grid, symbols);
+    const solvedGrid = solver.solveWithBacktracking();
+    console.log('Solved Grid:', solvedGrid);
 
     // await browser.close();
 })();
