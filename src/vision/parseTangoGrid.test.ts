@@ -1,5 +1,5 @@
 import path from "path";
-import { CellContent, CellGrid, parseTangoGrid, SymbolPositions, SymbolType } from "./parseTangoGrid";
+import { CellContent, CellGrid, parseTangoGrid, SymbolPosition, SymbolType } from "./parseTangoGrid";
 
 const screenshotPaths = [
     path.resolve(__dirname,'../../assets/previous/board1.png'),
@@ -34,7 +34,7 @@ const expectedGrids: CellGrid[] = [
     ]
 ]
 
-const expectedSymbols: SymbolPositions[] = [
+const expectedSymbols: SymbolPosition[][] = [
     [
         // horizontal
         {type: SymbolType.X, between: [[0,0],[0,1]]},

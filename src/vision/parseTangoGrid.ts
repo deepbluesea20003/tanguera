@@ -20,10 +20,10 @@ export enum SymbolType {
 }
 
 export type CellGrid = CellContent[][];
-export type SymbolPositions = {
+export type SymbolPosition = {
     type: SymbolType,
     between: [[number, number], [number, number]]
-}[];
+};
 
 
 /**
@@ -146,7 +146,7 @@ export async function parseTangoGrid(pathToImage: string, debug = false) {
 
 
     // read the symbols between cells
-    const symbols: SymbolPositions = [];
+    const symbols: SymbolPosition[] = [];
 
     const HORIZONTAL_START_COORDS = [491, 124];
     const SAMPLE_SIZE = 18;
